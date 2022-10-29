@@ -11,7 +11,7 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/olivere/elastic/v7/uritemplates"
+	"github.com/tulanz/elastic/v7/uritemplates"
 )
 
 // UpdateService updates a document in Elasticsearch.
@@ -25,6 +25,7 @@ type UpdateService struct {
 	errorTrace *bool       // include the stack trace of returned errors
 	filterPath []string    // list of filters used to reduce the response
 	headers    http.Header // custom request-level HTTP headers
+	pipeline   string
 
 	index               string
 	typ                 string
@@ -61,6 +62,11 @@ func NewUpdateService(client *Client) *UpdateService {
 // Pretty tells Elasticsearch whether to return a formatted JSON response.
 func (s *UpdateService) Pretty(pretty bool) *UpdateService {
 	s.pretty = &pretty
+	return s
+}
+
+func (s *UpdateService) Pipeline(pipeline string) *UpdateService {
+	s.pipeline = pipeline
 	return s
 }
 
@@ -278,6 +284,10 @@ func (s *UpdateService) url() (string, url.Values, error) {
 	if v := s.pretty; v != nil {
 		params.Set("pretty", fmt.Sprint(*v))
 	}
+	if s.pipeline != "" {
+		params.Set("pipeline", s.pipeline)
+	}
+
 	if v := s.human; v != nil {
 		params.Set("human", fmt.Sprint(*v))
 	}
